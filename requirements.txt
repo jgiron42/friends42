@@ -2,3 +2,5 @@ redis
 Flask
 requests
 arrow
+sentry-sdk
+netaddr

@@ -68,6 +68,21 @@ class Db:
 		query = self.cur.execute("SELECT name, campus, image_medium FROM USERS WHERE name = ?", [login])
 		return query.fetchone()
 
+	def set_ip_tracking(self, id:int, value: bool):
+		if id is None:
+			return False
+		self.cur.execute("UPDATE USERS SET ip_tracking = ? WHERE id = ?", [value, id])
+		self.commit()
+		return True
+
+	def get_ip_tracking_status(self, user_id):
+		query = self.cur.execute("SELECT ip_tracking FROM USERS WHERE id = ?", [user_id])
+		return query.fetchone()["ip_tracking"]
+
+	def update_wifi_connection(self, user_id):
+		self.cur.execute("UPDATE USERS SET last_wifi_activity = CURRENT_TIMESTAMP WHERE id = ?", [user_id])
+		self.commit()
+
 	def search(self, start: str):
 		req = self.cur.execute("SELECT name FROM USERS WHERE name LIKE ? LIMIT 5", [start + '%'])
 		resp = req.fetchall()

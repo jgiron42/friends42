@@ -3,6 +3,8 @@ from routes.helpers import *
 from flask import Blueprint, render_template, send_from_directory, make_response, redirect
 import maps.maps as maps
 import arrow
+import datetime
+from datetime import datetime
 
 app = Blueprint('front', __name__, template_folder='templates', static_folder='static')
 
@@ -18,6 +20,7 @@ def profile(login, userid):
 	is_banned = db.is_banned(user['id'])
 	theme = db.get_theme(userid['userid'])
 	hide = is_shadow_banned(user['id'], userid['userid'], db)
+	ip_tracking = db.get_ip_tracking_status(userid['userid'])
 	db.close()
 	if user is None:
 		return "", 404
@@ -31,7 +34,7 @@ def profile(login, userid):
 	else:
 		user["last_active"] = ""
 	return render_template('profile.html', user=user, is_friend=is_friend, userid=userid, is_banned=is_banned,
-	                       theme=theme)
+	                       ip_tracking=ip_tracking, theme=theme)
 
 
 @app.route('/settings/', methods=['GET', 'POST'])
@@ -44,12 +47,13 @@ def settings(userid):
 	theme = db.get_theme(userid['userid'])
 	cookies = db.get_user_cookies(userid['userid'])
 	campus_id = db.get_user_by_id(userid['userid'])['campus']
+	ip_tracking = db.get_ip_tracking_status(userid['userid'])
 	db.close()
 	kiosk_buildings = {}
 	if campus_id in maps.available:
 		kiosk_buildings = maps.available[campus_id].map['buildings']
 	return render_template('settings.html', user=user, notif=notif, theme=theme, cookies=cookies,
-	                       kiosk_buildings=kiosk_buildings)
+						   ip_tracking=ip_tracking, kiosk_buildings=kiosk_buildings)
 
 
 @app.route('/')
@@ -65,6 +69,7 @@ def index(userid):
 	issues = db.get_issues()
 	me = db.get_user_profile_id(userid['userid'])
 	theme = db.get_theme(userid['userid'])
+	ip_tracking = db.get_ip_tracking_status(userid['userid'])
 	shadow_bans = db.get_shadow_bans(userid['userid'])
 	db.close()
 	campus_map = maps.available[campus_id].map
@@ -106,7 +111,7 @@ def index(userid):
 	return render_template('index.html', map=campus_map[cluster_name], locations=location_map,
 	                       clusters=clusters_list, actual_cluster=cluster_name, issues_map=issues_map,
 	                       exrypz=campus_map['exrypz'], piscine=campus_map['piscine'], theme=theme,
-	                       focus=request.args.get('p'))
+	                       ip_tracking=ip_tracking, focus=request.args.get('p'))
 
 
 @app.route('/friends/')
@@ -114,10 +119,12 @@ def index(userid):
 def friends_route(userid):
 	db = Db("database.db")
 	theme = db.get_theme(userid['userid'])
+	ip_tracking = db.get_ip_tracking_status(userid['userid'])
 	friend_list = db.get_friends(userid['userid'])
 	shadow_bans = db.get_shadow_bans(userid['userid'])
 	db.close()
 	for friend in friend_list:
+		last_wifi_activity = datetime.utcnow() - datetime.strptime(friend['last_wifi_activity'], '%Y-%m-%d %H:%M:%S')
 		if friend['has'] in shadow_bans:
 			friend['position'] = None
 			friend["last_active"] = ""
@@ -126,12 +133,14 @@ def friends_route(userid):
 			if friend['active'] and friend['position'] is None:
 				date = arrow.get(friend['active'], "YYYY-MM-DD HH:mm:ss", tzinfo='UTC')
 				friend["last_active"] = "depuis " + date.humanize(locale='FR', only_distance=True)
+			elif last_wifi_activity.total_seconds() < 180 and friend['position'] is None:
+				friend['position'] = "wifi"
 			else:
 				friend["last_active"] = ""
 	friend_list = sorted(friend_list, key=lambda d: d['name'])
 	friend_list = sorted(friend_list, key=lambda d: 0 if d['relation'] == 1 else 1)
 	friend_list = sorted(friend_list, key=lambda d: 0 if d['position'] else 1)
-	return render_template('friends.html', friends=friend_list, theme=theme)
+	return render_template('friends.html', ip_tracking=ip_tracking, friends=friend_list, theme=theme)
 
 
 @app.route('/search/<keyword>/<int:friends_only>')

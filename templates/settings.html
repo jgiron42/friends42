@@ -182,9 +182,13 @@
 					<!-- User -->
 					<div class="card m-1">
 						<div class="card-body">
-							<h5 class="card-title"><i class="fa-solid fa-user"></i> Utilisateur</h5>
-							<button class="btn btn-danger" id="disconnect">Se déconnecter</button>
-						</div>
+                            <h5 class="card-title"><i class="fa-solid fa-user"></i> Utilisateur</h5>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" {{ 'checked' if ip_tracking else '' }}  type="checkbox" role="switch" id="ip-tracking-enabled" onclick="toggle_ip_tracking();">
+                                <label class="form-check-label" for="ip-tracking-enabled">Activer le tracage d'IP</label>
+                            </div>
+                            <button class="btn btn-danger" id="disconnect">Se déconnecter</button>
+                        </div>
 					</div>
 				</div>
 				<div hidden id="sessions">
@@ -310,6 +314,19 @@
 					triggerToast("Une erreur s'est produite", false);
 			})
 		}
+
+        function toggle_ip_tracking()
+        {
+            console.log(document.getElementById('ip-tracking-enabled').checked);
+            if (!document.getElementById('ip-tracking-enabled').checked)
+                fetch('/ip_tracking/disable').then(req => {
+                     document.getElementById('ip-tracking-enabled').checked = !(req.status === 200);
+                })
+            else
+                fetch('/ip_tracking/enable').then(req => {
+                     document.getElementById('ip-tracking-enabled').checked = (req.status === 200);
+                })
+        }
 
 		function tg_save() {
 			let tgmsg = encodeURIComponent(document.getElementById('tg-msg').value || '');

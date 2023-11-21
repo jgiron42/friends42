@@ -40,7 +40,7 @@
 					     alt="{{ friend.name }}'s image">
 					<div class="card-body">
 						<h5 class="card-title">
-							<i class="fa-solid {{ "fa-2xs fa-circle online" if friend.position else "fa-xs fa-person-walking offline" }}"></i> {{ friend.name }}
+							<i class="fa-solid {{ "fa-xs fa-person-walking offline" if not friend.position else ("fa-2xs fa-wifi online" if friend.position == "wifi" else "fa-2xs fa-circle online") }}"></i> {{ friend.name }}
 						</h5>
 						<p class="card-text">{{ friend.position if friend.position else 'Absent' }} {{ friend.last_active }}</p>
 					</div>

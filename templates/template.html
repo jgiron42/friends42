@@ -111,6 +111,12 @@
 	</script>
 {% endif %}
 
+{% if ip_tracking %}
+<script>
+    setInterval(() => {fetch('/ip_tracking/ping')}, 90000)
+</script>
+{% endif %}
+
 <link href="/static/fontawesome/css/fontawesome.min.css?v={{ version }}" rel="stylesheet">
 <link href="/static/fontawesome/css/solid.min.css?v={{ version }}" rel="stylesheet">
 <link href="/static/fontawesome/css/regular.min.css?v={{ version }}" rel="stylesheet">

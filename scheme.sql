@@ -1,13 +1,15 @@
 CREATE TABLE IF NOT EXISTS USERS
 (
-	id           INTEGER PRIMARY KEY,
-	name         VARCHAR(12) UNIQUE,
-	image        VARCHAR(100),
-	image_medium VARCHAR(100),
-	pool         VARCHAR(100),
-	lang         VARCHAR(3) DEFAULT 'fr',
-	active       TIMESTAMP  DEFAULT 0,
-	campus       INTEGER    DEFAULT 1
+	id                  INTEGER PRIMARY KEY,
+	name                VARCHAR(12) UNIQUE,
+	image               VARCHAR(100),
+	image_medium        VARCHAR(100),
+	pool                VARCHAR(100),
+	lang                VARCHAR(3) DEFAULT 'fr',
+	active              TIMESTAMP  DEFAULT 0,
+	last_wifi_activity  TIMESTAMP  DEFAULT 0,
+	campus              INTEGER    DEFAULT 1,
+    ip_tracking         BOOL       DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS COOKIES

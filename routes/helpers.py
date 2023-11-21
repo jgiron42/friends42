@@ -13,6 +13,9 @@ from time import time
 import arrow
 import zlib
 
+from netaddr import *
+from netaddr import iter_iprange
+
 
 def proxy_images(url: str, light=False):
 	if not url:
@@ -22,6 +25,16 @@ def proxy_images(url: str, light=False):
 	if 'small' in url or 'medium' in url:
 		return url.replace('https://cdn.intra.42.fr/users/', 'https://friends42.fr/proxy/')
 	return url.replace('https://cdn.intra.42.fr/users/', 'https://friends42.fr/proxy/resize/512/')
+
+
+
+def is_42_address(input_addr):
+	for subnet in config.wifi_addresses:
+		curr_subnet = IPNetwork(subnet)
+		for curr_ip in curr_subnet:
+			if input_addr == str(curr_ip):
+				return True
+	return False
 
 
 def auth_required(function):
@@ -36,6 +49,8 @@ def auth_required(function):
 			resp.set_cookie("previous", str(request.url_rule), secure=True, max_age=None, httponly=True)
 			return resp
 		details = db.get_user_by_id(userid['userid'])
+		if db.get_ip_tracking_status(userid['userid']) and hasattr(config, "wifi_addresses") and is_42_address(request.remote_addr):
+			db.update_wifi_connection(userid['userid'])
 		db.close()
 		userid['campus'] = details['campus']
 		userid['login'] = details['name']
@@ -123,10 +138,10 @@ def create_users(db, profiles):
 def get_cached_locations(campus=1):
 	locations = r.get("locations/" + str(campus)) or '[]'
 	# locations[0] == '[':
-	if locations[0] == 91:
+	if locations[0] == '[':
 		cache_tab = json.loads(locations)
 	else:
-		cache_tab = json.loads(zlib.decompress(locations).decode('utf-8'))
+		cache_tab = json.loads(zlib.decompress(locations))
 	return cache_tab
 
 

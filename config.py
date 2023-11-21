@@ -13,3 +13,4 @@ redis_port = 6379
 campuses_to_update = [1, 53]
 sentry_traces_sample_rate = 0.3
 sentry_profiles_sample_rate = 0.3
+wifi_addresses = [ "127.0.0.0/24" ]
