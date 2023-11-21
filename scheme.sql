@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS USERS
 	pool                VARCHAR(100),
 	lang                VARCHAR(3) DEFAULT 'fr',
 	active              TIMESTAMP  DEFAULT 0,
-	last_wifi_activity  TIMESTAMP  DEFAULT 0,
+	last_wifi_activity  TIMESTAMP  DEFAULT '1970-01-01 00:00:00',
 	campus              INTEGER    DEFAULT 1,
     ip_tracking         BOOL       DEFAULT FALSE
 );
